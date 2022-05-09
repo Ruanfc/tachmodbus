@@ -2,9 +2,11 @@
 #include <Arduino.h>
 #include <ArduinoModbus.h>
 
-RS485Class RS485_(Serial1, 18, A6, A5); //Troca o serial por serial1
+//RS485Class RS485_(Serial1, 18, A6, A5); //Troca o serial por serial1
+//RS485Class RS485_(Serial2, 16, A6, A5); //Troca o serial por serial1
+RS485Class RS485_(Serial1, 18, A9, A8); //Troca o serial por serial1
 Inverter impeller(1, "Impeller", 3);
-Inverter rotor(2, "Rotor", 4);
+Inverter rotor(2, "Rotor", 2);
 
 #define WRITE_INTERVAL 100
 unsigned long current_millis = 0, previous_millis = 0;
@@ -18,8 +20,9 @@ void impeller_isr() { impeller.isr_handler(); }
 void rotor_isr() { rotor.isr_handler(); }
 
 void setup() {
-  Serial.begin(9600);
-  ModbusRTUClient.begin(RS485_, 9600, SERIAL_8E1);
+  Serial.begin(115200);
+  ModbusRTUClient.begin(RS485_, 115200, SERIAL_8E1);
+  //ModbusRTUClient.begin(115200, SERIAL_8E1);
   impeller.init();
   rotor.init();
   attachInterrupt(digitalPinToInterrupt(impeller.getHallPin()), impeller_isr,
@@ -40,16 +43,23 @@ void loop() {
     // Se necessário limitar valores, olhar tachtran original
 
     // Atua e manda pra serial
+    // Serial.print("; time: ");
+    //   Serial.print(millis());
+    //   Serial.print(";");
     impeller.atuador();
-    Serial.print(impeller.getSpeed());
-    Serial.print(";");
+   Serial.print(impeller.getSpeed());
+    // Serial.print("; time: ");
+    //   Serial.print(millis());
+   Serial.print(";");
     rotor.atuador(); // Verificar fios (Soldar tudo)
-    Serial.print(rotor.getSpeed());
-    Serial.print(";");
-    Serial.print(impeller.get_set_speed());
-    Serial.print(";");
-    Serial.print(rotor.get_set_speed());
-    Serial.println();
+   Serial.print(rotor.getSpeed());
+    // Serial.print("; time: ");
+    //   Serial.print(millis());
+   Serial.print(";");
+   Serial.print(impeller.get_set_speed());
+   Serial.print(";");
+   Serial.print(rotor.get_set_speed());
+   Serial.println();
     previous_millis = current_millis;
   }
   /* // Checagem de parada do inversor */

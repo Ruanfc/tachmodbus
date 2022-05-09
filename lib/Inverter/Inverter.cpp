@@ -61,9 +61,9 @@ void Inverter::writeToMotor(float value)
   {
     //Olhar manual específico do fre-700, na página 241
     //or bitwise on register 40009 to forward rotate motor
-    ModbusRTUClient.registerMaskWrite(_id,40009, ~0x2, 0x2);
+    ModbusRTUClient.registerMaskWrite(_id,8, ~0x2, 0x2);
     //set register 40014 to control running frequency
-    ModbusRTUClient.holdingRegisterWrite(_id, 40014, (int) value);
+    ModbusRTUClient.holdingRegisterWrite(_id, 13, (int) value);
   }
 
 float Inverter::bound(float x, float x_min, float x_max) {
