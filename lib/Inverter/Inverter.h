@@ -35,6 +35,8 @@ public:
   void reset();
   int getId();
 
+  //float output;
+
 private:
   int _id; // Id do inversor na rede modbus
   uint8_t _hall_pin;
@@ -47,8 +49,10 @@ private:
   // Controle de velocidade
   // PID
   unsigned long currentTime, elapsedTime, previousTime = 0;
-  float error, lastError = 0, cumError, rateError, output;
-  float Kp = 1, Ki = 1, Kd = 1;
+  float error, lastError = 0, cumError, rateError;
+  float output;
+  //Falta ajustar parâmetros
+  float Kp = 1, Ki = 0, Kd = 0;
   // Limites
   float set_acc = 0;
   float  acc = 0;

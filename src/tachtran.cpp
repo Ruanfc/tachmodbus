@@ -8,8 +8,9 @@ RS485Class RS485_(Serial1, 18, A9, A8); //Troca o serial por serial1
 Inverter impeller(1, "Impeller", 3);
 Inverter rotor(2, "Rotor", 2);
 
-#define WRITE_INTERVAL 100
-unsigned long current_millis = 0, previous_millis = 0;
+#define SERIAL_PRINT_INTERVAL 100
+#define ATUADOR_INTERVAL 100
+unsigned long current_millis = 0, previous_millis = 0, previous_millis_atuador= 0;
 
 String inputStr = "";
 int range = 10;
@@ -21,7 +22,7 @@ void rotor_isr() { rotor.isr_handler(); }
 
 void setup() {
   Serial.begin(115200);
-  ModbusRTUClient.begin(RS485_, 115200, SERIAL_8E1);
+  ModbusRTUClient.begin(RS485_, 9600, SERIAL_8E1);
   //ModbusRTUClient.begin(115200, SERIAL_8E1);
   impeller.init();
   rotor.init();
@@ -35,27 +36,23 @@ void loop() {
   current_millis = millis();
   impeller.updateSpeed(current_millis);
   rotor.updateSpeed(current_millis);
+  //elapsed_millis = current_millis - previous_millis;
+  // Espera pelo menos 1 milisegundo para cada atuação
+  if (current_millis > previous_millis_atuador + ATUADOR_INTERVAL)
+    {
+      impeller.atuador();
+      //rotor.atuador();
+      previous_millis_atuador = current_millis;
+    }
 
   // Altera os motores em um intervalo fixo de 100ms
-  if (current_millis > previous_millis + WRITE_INTERVAL) {
-    // Se for necessário filtrar dados, olhar em tachtran original
-
-    // Se necessário limitar valores, olhar tachtran original
-
-    // Atua e manda pra serial
-    // Serial.print("; time: ");
-    //   Serial.print(millis());
-    //   Serial.print(";");
-    impeller.atuador();
+  if (current_millis > previous_millis + SERIAL_PRINT_INTERVAL) {
    Serial.print(impeller.getSpeed());
-    // Serial.print("; time: ");
-    //   Serial.print(millis());
    Serial.print(";");
-    rotor.atuador(); // Verificar fios (Soldar tudo)
+   //impeller.writeToMotor(impeller.output);
    Serial.print(rotor.getSpeed());
-    // Serial.print("; time: ");
-    //   Serial.print(millis());
    Serial.print(";");
+   //rotor.writeToMotor(rotor.output);
    Serial.print(impeller.get_set_speed());
    Serial.print(";");
    Serial.print(rotor.get_set_speed());

@@ -39,19 +39,23 @@ void Inverter::atuador() {
   // out value to inverter = output
 
   // Primeiro determina o tempo
-  currentTime = millis();
+  currentTime = micros();
   elapsedTime = currentTime - previousTime;
   //Cálcular erro
   error = set_speed - speed;
   //integral
   cumError += error * elapsedTime;
   //derivative
-  rateError += (error - lastError)/elapsedTime;
+  rateError += (error - lastError)/(elapsedTime);
   //Output value
   this->output = Kp * error + Ki * cumError + Kd * rateError;
   //Housekeeping for next iteration
   lastError = error;
   previousTime = currentTime;
+
+  Serial.print("\\.");
+  Serial.print(output);
+  Serial.print(".\\");
 
   //Agora jogamos o valor de saída para a serial
   writeToMotor(output);
@@ -61,9 +65,11 @@ void Inverter::writeToMotor(float value)
   {
     //Olhar manual específico do fre-700, na página 241
     //or bitwise on register 40009 to forward rotate motor
-    ModbusRTUClient.registerMaskWrite(_id,8, ~0x2, 0x2);
+    //ModbusRTUClient.registerMaskWrite(_id,8, ~0x2, 0x2);
+    ModbusRTUClient.holdingRegisterWrite(_id, 8, 2);
     //set register 40014 to control running frequency
-    ModbusRTUClient.holdingRegisterWrite(_id, 13, (int) value);
+    //ModbusRTUClient.holdingRegisterWrite(_id, 13, (int) value);
+    ModbusRTUClient.holdingRegisterWrite(_id, 13, (int)100*value);
   }
 
 float Inverter::bound(float x, float x_min, float x_max) {
