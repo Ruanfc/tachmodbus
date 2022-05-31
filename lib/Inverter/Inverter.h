@@ -31,7 +31,7 @@ public:
   int getHallPin();
   void checkStop(unsigned long ctime);
 
-  void writeToMotor(float value);
+  int writeToMotor(float value);
   void reset();
   int getId();
 
@@ -51,8 +51,9 @@ private:
   unsigned long currentTime, elapsedTime, previousTime = 0;
   float error, lastError = 0, cumError, rateError;
   float output;
+  int write_success = 0;
   //Falta ajustar parâmetros
-  float Kp = 1, Ki = 0, Kd = 0;
+  float Kp = 0.2, Ki = 0.05, Kd = 0;
   // Limites
   float set_acc = 0;
   float  acc = 0;

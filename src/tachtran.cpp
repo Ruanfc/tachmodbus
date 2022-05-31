@@ -41,7 +41,7 @@ void loop() {
   if (current_millis > previous_millis_atuador + ATUADOR_INTERVAL)
     {
       impeller.atuador();
-      //rotor.atuador();
+      rotor.atuador();
       previous_millis_atuador = current_millis;
     }
 

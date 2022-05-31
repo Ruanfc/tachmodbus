@@ -9,7 +9,8 @@ Inverter::Inverter(int id, char *name, uint8_t hall_pin) {
 // void Inverter::init(float tempKp, float tempKi) {
 void Inverter::init() {
   pinMode(this->_hall_pin, INPUT);
-  //ModbusRTUClient.begin(9600, SERIAL_8E1);
+  while (!ModbusRTUClient.holdingRegisterWrite(_id, 8, 2)) {delay(100);}
+  ModbusRTUClient.setTimeout(50); //unsigned long (25 milissegundos)
 }
 
 float Inverter::calcrps() {
@@ -40,36 +41,40 @@ void Inverter::atuador() {
 
   // Primeiro determina o tempo
   currentTime = micros();
-  elapsedTime = currentTime - previousTime;
-  //Cálcular erro
-  error = set_speed - speed;
-  //integral
-  cumError += error * elapsedTime;
-  //derivative
-  rateError += (error - lastError)/(elapsedTime);
-  //Output value
-  this->output = Kp * error + Ki * cumError + Kd * rateError;
-  //Housekeeping for next iteration
-  lastError = error;
+  if (write_success) // medida para evitar instabilidade
+    {
+      elapsedTime = (currentTime - previousTime);
+      //Cálcular erro
+      error = set_speed - speed;
+      //integral
+      cumError += error * elapsedTime/1000000;
+      //derivative
+      rateError += (error - lastError)/(elapsedTime);
+      //Output value
+      this->output = Kp * error + Ki * cumError + Kd * rateError;
+      //Housekeeping for next iteration
+      lastError = error;
+    }
   previousTime = currentTime;
 
-  Serial.print("\\.");
+  output = bound(output, 0, 40);
+  Serial.print("\\");
   Serial.print(output);
-  Serial.print(".\\");
+  Serial.print("\\");
 
   //Agora jogamos o valor de saída para a serial
-  writeToMotor(output);
+  write_success = writeToMotor(output);
 }
 
-void Inverter::writeToMotor(float value)
+int Inverter::writeToMotor(float value)
   {
     //Olhar manual específico do fre-700, na página 241
     //or bitwise on register 40009 to forward rotate motor
-    //ModbusRTUClient.registerMaskWrite(_id,8, ~0x2, 0x2);
-    ModbusRTUClient.holdingRegisterWrite(_id, 8, 2);
+        //ModbusRTUClient.registerMaskWrite(_id,8, ~0x2, 0x2);
+    //ModbusRTUClient.holdingRegisterWrite(_id, 8, 2);
     //set register 40014 to control running frequency
     //ModbusRTUClient.holdingRegisterWrite(_id, 13, (int) value);
-    ModbusRTUClient.holdingRegisterWrite(_id, 13, (int)100*value);
+    return ModbusRTUClient.holdingRegisterWrite(_id, 13, (int)100*value);
   }
 
 float Inverter::bound(float x, float x_min, float x_max) {
