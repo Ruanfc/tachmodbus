@@ -2,8 +2,8 @@
 #include <Arduino.h>
 #include <ArduinoModbus.h>
 
-//RS485Class RS485_(Serial1, 18, A6, A5); //Troca o serial por serial1
-//RS485Class RS485_(Serial2, 16, A6, A5); //Troca o serial por serial1
+//RS485Class RS485_(Serial1, 18, A6, A5);
+//RS485Class RS485_(Serial2, 16, A6, A5);
 RS485Class RS485_(Serial1, 18, A9, A8); //Troca o serial por serial1
 Inverter impeller(1, "Impeller", 3);
 Inverter rotor(2, "Rotor", 2);
